@@ -1,0 +1,162 @@
+#Installing Packages& libraries
+
+install.packages("tidyverse") #Vital package for data analysis & visualization which contains key libraries like: lubridate, ggplot2, readr, etc
+install.packages("janitor") #Just like the name implies, it's great for data cleaning.
+library(tidyverse)
+library(lubridate)
+library(janitor)
+
+#Importing & creating a dataframe
+daily_activity <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/dailyActivity_merged.csv")
+daily_calories <-read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/dailyCalories_merged.csv")
+daily_intensities <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/dailyIntensities_merged.csv")
+daily_steps <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/dailySteps_merged.csv")
+heartrateS <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/heartrate_seconds_merged.csv")
+hourly_calories <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/hourlyCalories_merged.csv")
+hourly_intensities <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/hourlyIntensities_merged.csv")
+hourly_steps <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/hourlySteps_merged.csv")
+minute_caloriesN <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteCaloriesNarrow_merged.csv")
+minute_caloriesW <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteCaloriesWide_merged.csv")
+minute_intensityN <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteIntensitiesNarrow_merged.csv")
+minute_intensityW <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteIntensitiesWide_merged.csv")
+minuteMETs<- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteMETsNarrow_merged.csv")
+minute_sleep <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteSleep_merged.csv")
+minute_stepsN<- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteStepsNarrow_merged.csv")
+minute_stepsW <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/minuteStepsWide_merged.csv")
+daily_sleep <- read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/sleepDay_merged.csv")
+weight_log <-read_csv("/Users/ify/R Projects/Fitabase Data 4.12.16-5.12.16 5/weightLogInfo_merged.csv")
+
+
+# Cleaning the data by calculating unique participants
+
+n_distinct(daily_activity$Id) #33
+n_distinct(daily_calories$Id) #33
+n_distinct(daily_intensities$Id) #33
+n_distinct(daily_steps$Id) #33
+n_distinct(heartrateS$Id) #14
+n_distinct(hourly_calories$Id) #33
+n_distinct(hourly_intensities$Id) #33
+n_distinct(hourly_steps$Id) #33
+n_distinct(minute_caloriesN$Id) #33
+n_distinct(minute_caloriesW$Id) #33
+n_distinct(minute_intensityN$Id) #33
+n_distinct(minute_intensityW$Id) #33
+n_distinct(minuteMETs$Id) #33
+n_distinct(minute_sleep$Id) #24
+n_distinct(minute_stepsN$Id)#33
+n_distinct(minute_stepsW$Id) #33
+n_distinct(daily_sleep$Id) #24
+n_distinct(weight_log$Id)#8
+
+#Cleaning the data by finding duplicate entries in selected dataset
+
+sum(duplicated(daily_activity))
+sum(duplicated(daily_calories))
+sum(duplicated(daily_steps))
+sum(duplicated(daily_sleep)) #3
+
+#Cleaning the data by removing duplicate entries in selected dataset
+
+#Removing Sleep duplicate data
+sleep <- daily_sleep[!duplicated(daily_sleep),]
+
+#or
+
+daily_sleep <- daily_sleep %>%
+  distinct() %>%
+  drop_na()
+
+#Confirm that change has been effected
+sum(duplicated(daily_sleep)) #0
+
+#View the selected data
+head(daily_activity)
+str(daily_activity)
+
+head(daily_calories)
+str(daily_calories)
+
+head(daily_steps)
+str(daily_steps)
+
+head(daily_sleep)
+str(daily_sleep)
+
+#Cleaning the data 
+#Group DateTime into separate columns
+daily_sleep <- daily_sleep %>%
+  separate(SleepDay, c("Date", "Time"), " ")
+View(daily_sleep)
+
+
+#Cleaning the data
+#Check Date format By changing Date string to recommended base R Date format
+
+#Activity
+daily_activity$ActivityDate <- as.Date(daily_activity$ActivityDate, format= "%m/%d/%y")
+#Sleep
+daily_sleep$Date <-as.Date(daily_sleep$Date, format= "%m/%d/%y")
+
+#Verify class of the Date column
+class(daily_activity$ActivityDate)
+class(daily_sleep$Date)
+
+#Create a new Column to Activity Dataframe to show days of the week
+daily_activity <- daily_activity              
+daily_activity$weekday <- weekdays(daily_activity$ActivityDate)                 
+
+#Create a new Column to Sleep Dataframe to show days of the week
+daily_sleep <- daily_sleep                                         
+daily_sleep$weekday <- weekdays(daily_sleep$Date) 
+
+
+#View result of code
+View(daily_sleep)
+View(daily_activity)
+
+#Summarize Activity data for analysis - This shows min, max, mean, median values
+daily_activity %>%
+  select(weekday, TotalSteps, SedentaryMinutes, Calories) %>%
+  summary()
+#Summarize Sleep data for analysis - This shows min, max, mean, median values
+daily_sleep %>%
+  select(TotalSleepRecords, TotalMinutesAsleep, TotalTimeInBed) %>%
+  summary()
+
+#Summarize Intensity data for analysis #Extra Data
+daily_intensities %>%
+  select(VeryActiveMinutes, FairlyActiveMinutes, LightlyActiveMinutes, SedentaryMinutes) %>%
+  summary()
+
+
+#Merge tables 
+sleep_activity_merged <- merge(daily_sleep, daily_activity, by ="Id", all = TRUE)
+#Checkfor duplicated values
+n_distinct(sleep_activity_merged$Id) 
+
+#Plot Graph
+#Scatter plot showing "Daily Steps vs Calories"
+ChartI <- ggplot(sleep_activity_merged, aes(x = TotalSteps, y = Calories)) +
+  geom_jitter() +
+  geom_smooth(color = "blue") +
+  labs(title = "Daily Steps vs Calories", x = "Daily steps", y = "Calories", subtitle="Relationship between *burnt calories* and *daily steps* taken", caption = 
+         "FitBit Data Survey") +
+  theme(panel.background = element_blank(),
+        plot.title = element_text(size=15))
+ChartI 
+
+#Line Chart showing "Calories burned vs Minutes asleep"
+#First, arrange weekdays in chronological order instead of default alphabetical order in X-Axis
+sleep_activity_merged$weekday.y <-factor(sleep_activity_merged$weekday.y,
+                                         levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+#Line Chart
+ChartII <- ggplot(sleep_activity_merged, aes(x = weekday.y, y = TotalSteps))  +
+  geom_line(stat="identity", na.rm =TRUE, size=1.5,aes(fill=TotalSteps)) +
+  labs(title = "Weekdays vs Daily Steps",caption = "FitBit Data Survey")
+ChartII
+
+#Bar Chart
+ChartIII <- ggplot(sleep_activity_merged, aes(x = weekday.y, y = TotalMinutesAsleep))  +
+  geom_bar(stat="identity", na.rm =TRUE, size=1.5,aes(fill=TotalMinutesAsleep)) +
+  labs(title = "Weekdays vs Daily Sleep",caption = "FitBit Data Survey")
+ChartIII
